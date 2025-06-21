@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
+  IsInt,
 } from 'class-validator';
 
 export class CreateEmployeeDto {
@@ -15,6 +16,10 @@ export class CreateEmployeeDto {
   firstName: string;
 
   @IsString()
+  @IsOptional()
+  middleName?: string;
+
+  @IsString()
   @IsNotEmpty()
   lastName: string;
 
@@ -24,24 +29,25 @@ export class CreateEmployeeDto {
 
   @IsDateString()
   @IsNotEmpty()
-  hiredate: string;
+  hiredate: string; // Make sure this matches Prisma/DB field
 
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone: string; // Maps to frontend "contact"
 
   @IsString()
   @IsNotEmpty()
-  barangay: string;
+  barangay: string; // Will be used as address for now
 
   @IsString()
   @IsNotEmpty()
   zipCode: string;
 
+  @IsInt()
   @IsNotEmpty()
-  departmentId: number;
+  positionId: number; // From dropdown
 
   @IsString()
   @IsOptional()
-  employeeStatus?: string;
+  employeeStatus?: string; // Maps to frontend "status"
 }

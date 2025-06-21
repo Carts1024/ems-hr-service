@@ -17,26 +17,46 @@ model Employee {
   id                 String   @id @default(cuid())
   employeeNumber     String   @unique
   firstName          String    
+  middleName             String?
   lastName           String    
   birthdate          DateTime  
   hiredate           DateTime  
   phone              String 
   barangay           String 
   zipCode            String 
+  emergencyContactName   String?
+  emergencyContactNo     String?
+  basicPay               Decimal?
+  govtIdType             String?
+  govtIdNo               String?
+  licenseType            String?
+  licenseNo              String?
+  restrictionCodes       String[]
+  expireDate             DateTime?
   employeeStatus     String   @default("active") // Employee status (e.g., 'active', 'inactive', 'terminated', 'On Leave')
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-  departmentId       Int // Foreign key to Department model
 
-  department Department @relation(fields: [departmentId], references: [id])
+  // Remove departmentId, use positionId instead
+  positionId         Int
+  position           Position @relation(fields: [positionId], references: [id])
 }
 
 model Department {
   id                  Int      @id @default(autoincrement())
   departmentName      String   @unique
   createdAt           DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt           DateTime @updatedAt
 
-  // Relationships
-  employee Employee[]
+  positions           Position[]
+}
+
+model Position {
+  id            Int      @id @default(autoincrement())
+  positionName  String
+  departmentId  Int
+  department    Department @relation(fields: [departmentId], references: [id])
+  employees     Employee[]
+
+  @@unique([positionName, departmentId])
 }

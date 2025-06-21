@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/hr-service"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*","apps/hr-service/test-env.js"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }
