@@ -1,11 +1,7 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/require-await */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, DeductionType } from '@prisma/client';
+import { PrismaClient, Deduction, DeductionType } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const prisma = new PrismaClient();
 
@@ -42,5 +38,59 @@ export class DeductionsService {
   async deleteDeductionType(id: number): Promise<{ message: string }> {
     await prisma.deductionType.delete({ where: { id } });
     return { message: 'Deduction type deleted successfully' };
+  }
+
+  // ==== Deductions ====
+  async getAllDeductions(): Promise<Deduction[]> {
+    return prisma.deduction.findMany({
+      include: { deductionType: true, employee: true },
+    });
+  }
+
+  async getDeductionById(id: number): Promise<Deduction> {
+    const deduction = await prisma.deduction.findUnique({
+      where: { id },
+      include: { deductionType: true, employee: true },
+    });
+    if (!deduction) throw new NotFoundException('Deduction not found');
+    return deduction;
+  }
+
+  async createDeduction(data: {
+    employeeId: string;
+    deductionTypeId: number;
+    amount: number;
+    frequency: string;
+    effectiveDate: string;
+    endDate?: string;
+    isActive?: boolean;
+  }): Promise<Deduction> {
+    return prisma.deduction.create({
+      data: {
+        employeeId: data.employeeId,
+        deductionTypeId: data.deductionTypeId,
+        amount: new Decimal(data.amount),
+        frequency: data.frequency,
+        effectiveDate: new Date(data.effectiveDate),
+        endDate: data.endDate ? new Date(data.endDate) : undefined,
+        isActive: data.isActive ?? true,
+      },
+      include: { deductionType: true, employee: true },
+    });
+  }
+
+  async updateDeduction(id: number, data: Partial<Omit<Deduction, 'id'>>): Promise<Deduction> {
+    const updated = await prisma.deduction.update({
+      where: { id },
+      data,
+      include: { deductionType: true, employee: true },
+    });
+    if (!updated) throw new NotFoundException('Deduction not found');
+    return updated;
+  }
+
+  async deleteDeduction(id: number): Promise<{ message: string }> {
+    await prisma.deduction.delete({ where: { id } });
+    return { message: 'Deduction deleted successfully' };
   }
 }
