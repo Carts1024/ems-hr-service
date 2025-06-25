@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -13,24 +14,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Department Model
+model Department {
+  id             Int        @id @default(autoincrement())
+  departmentName String     @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  positions      Position[]
+  candidates     Candidate[]
+}
+
+// Position Model
+model Position {
+  id            Int         @id @default(autoincrement())
+  positionName  String
+  departmentId  Int
+  department    Department  @relation(fields: [departmentId], references: [id])
+  employees     Employee[]
+
+  @@unique([positionName, departmentId])
+  candidates    Candidate[] // Positions can also be linked to candidates
+}
+
+// Employee Model
 model Employee {
-  id                 String   @id @default(cuid())
-  employeeNumber     String   @unique
-  firstName          String    
+  id                     String      @id @default(cuid())
+  employeeNumber         String      @unique
+  firstName              String
   middleName             String?
-<<<<<<< Updated upstream
-  lastName           String    
-  birthdate          DateTime  
-  hiredate           DateTime  
-  phone              String 
-  barangay           String 
-  zipCode            String 
-  emergencyContactName   String?
-  emergencyContactNo     String?
-  basicPay               Decimal?
-  govtIdType             String?
-  govtIdNo               String?
-=======
   lastName               String
   suffix                 String?
   email                  String?     @unique
@@ -46,39 +58,33 @@ model Employee {
   emergencyContactName   String?
   emergencyContactNo     String?
   basicRate               Decimal?
->>>>>>> Stashed changes
   licenseType            String?
   licenseNo              String?
   restrictionCodes       String[]
   expireDate             DateTime?
-  employeeStatus     String   @default("active") // Employee status (e.g., 'active', 'inactive', 'terminated', 'On Leave')
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  employeeStatus         String      @default("active") // (e.g., 'active', 'inactive', 'terminated', 'On Leave')
+  employeeType           String      @default("regular") // (e.g., 'regular', 'contractual', 'probationary', 'temporary')
+  employeeClassification String?     // (e.g., 'full-time', 'part-time', 'intern', 'freelancer')
+  terminationDate        DateTime?
+  terminationReason      String?
 
-  // Remove departmentId, use positionId instead
-  positionId         Int
-  position           Position @relation(fields: [positionId], references: [id])
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  positionId             Int
+  position               Position    @relation(fields: [positionId], references: [id])
+
+  benefits               Benefit[]
+  deductions             Deduction[]
+  attendances           Attendance[]
+  governmentIDs         GovernmentID[]
+  workExperiences       WorkExperience[]
+  educations            Education[]
+  cashAdvanceRequests   CashAdvanceRequest[]
+  resignationRequests   ResignationRequest[]
+  leaveRequests         LeaveRequest[]
 }
 
-<<<<<<< Updated upstream
-model Department {
-  id                  Int      @id @default(autoincrement())
-  departmentName      String   @unique
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  positions           Position[]
-}
-
-model Position {
-  id            Int      @id @default(autoincrement())
-  positionName  String
-  departmentId  Int
-  department    Department @relation(fields: [departmentId], references: [id])
-  employees     Employee[]
-
-  @@unique([positionName, departmentId])
-=======
 // Benefit Model
 model Benefit {
   id            Int       @id @default(autoincrement())
@@ -289,7 +295,6 @@ model CandidateEducation {
   description  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
->>>>>>> Stashed changes
 }
 
 model BenefitType {
