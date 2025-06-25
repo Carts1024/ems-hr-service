@@ -86,16 +86,15 @@ model Employee {
 }
 
 // Benefit Model
-model Benefit {
+model Benefit { //13th month
   id            Int       @id @default(autoincrement())
   employeeId    String
   employee      Employee  @relation(fields: [employeeId], references: [id])
-  type          String    // 'fixed' or 'percentage'
   value         Decimal   // if type is 'percentage', value = percent (e.g., 10 for 10%), if 'fixed', value = amount (e.g., 300)
-  frequency     String
+  frequency     String?
   effectiveDate DateTime
   endDate       DateTime?
-  benefitTypeId Int
+  benefitTypeId Int // Name of the benefit type (e.g., '13th month', 'Health Insurance', etc.)
   benefitType   BenefitType @relation(fields: [benefitTypeId], references: [id])
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
@@ -103,16 +102,17 @@ model Benefit {
 }
 
 // Deduction Model
-model Deduction {
+model Deduction { // e.g., SSS, PhilHealth, Pag-IBIG, Tax, etc.
   id            Int       @id @default(autoincrement())
   employeeId    String
   employee      Employee  @relation(fields: [employeeId], references: [id])
-  amount        Decimal
+  type          String    // 'fixed' or 'percentage'
+  value        Decimal
   frequency     String    // ex: 'one_time', 'daily', 'weekly', 'monthly', 'yearly'
   effectiveDate DateTime
   endDate       DateTime?
   isActive      Boolean   @default(true)
-  deductionTypeId Int
+  deductionTypeId Int // Name of the deduction type
   deductionType   DeductionType @relation(fields: [deductionTypeId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

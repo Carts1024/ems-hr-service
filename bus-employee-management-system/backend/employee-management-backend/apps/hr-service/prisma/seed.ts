@@ -1,10 +1,45 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Seed departments and positions (your original code)
+  // --- 1. SEED BENEFIT TYPES ---
+  const benefitTypesData = [
+    { id: 1, name: "Service Incentive Leave", description: "Service Incentive Leave" },
+    { id: 2, name: "Holiday Pay", description: "Holiday Pay" },
+    { id: 3, name: "13th Month Pay", description: "13th Month Pay" },
+    { id: 4, name: "Revenue Benefit", description: "Revenue Benefit" },
+    { id: 5, name: "Safety Benefit", description: "Safety Benefit" },
+    { id: 6, name: "Additional Benefit", description: "Additional Benefit" },
+  ];
+
+  for (const benefitType of benefitTypesData) {
+    await prisma.benefitType.upsert({
+      where: { id: benefitType.id },
+      update: { name: benefitType.name, description: benefitType.description },
+      create: benefitType,
+    });
+  }
+
+  // --- 2. SEED DEDUCTION TYPES ---
+  const deductionTypesData = [
+    { id: 1, name: "Philhealth", description: "Philhealth Deduction" },
+    { id: 2, name: "SSS", description: "Social Security System Deduction" },
+    { id: 3, name: "Pag-ibig", description: "Pag-ibig Deduction" },
+    { id: 4, name: "Cash Advance", description: "Cash Advance Deduction" },
+    { id: 5, name: "Short", description: "Short Deduction" },
+  ];
+
+  for (const deductionType of deductionTypesData) {
+    await prisma.deductionType.upsert({
+      where: { id: deductionType.id },
+      update: { name: deductionType.name, description: deductionType.description },
+      create: deductionType,
+    });
+  }
+
+  // --- 3. SEED DEPARTMENTS AND POSITIONS ---
   const data = [
     {
       departmentName: 'Human Resources',
@@ -48,9 +83,43 @@ async function main() {
     }
   }
 
-  // Seed employees for positionId: 9
+  // Helper: For sample, seed each employee with ALL benefit and deduction types
+  async function seedBenefitsAndDeductions(employeeId: string) {
+    // Seed all benefit types
+    for (const benefitType of benefitTypesData) {
+      await prisma.benefit.create({
+        data: {
+          employeeId,
+          benefitTypeId: benefitType.id,
+          type: 'fixed',                            // or "percentage"
+          value: new Prisma.Decimal(100 + benefitType.id * 10), // just sample different values
+          frequency: 'monthly',
+          effectiveDate: new Date("2024-07-01"),
+          endDate: null,
+          isActive: true,
+        },
+      });
+    }
+    // Seed all deduction types
+    for (const deductionType of deductionTypesData) {
+      await prisma.deduction.create({
+        data: {
+          employeeId,
+          deductionTypeId: deductionType.id,
+          amount: new Prisma.Decimal(50 + deductionType.id * 5), // just sample different values
+          frequency: 'monthly',
+          effectiveDate: new Date("2024-07-01"),
+          endDate: null,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // --- 4. SEED EMPLOYEES + THEIR BENEFITS/DEDUCTIONS ---
+  // Seed employees for positionId: 9 (Driver)
   for (let i = 1; i <= 10; i++) {
-    await prisma.employee.create({
+    const emp = await prisma.employee.create({
       data: {
         employeeNumber: `EMP2024-P9-${i.toString().padStart(3, '0')}`,
         firstName: `DriverFirst${i}`,
@@ -68,7 +137,7 @@ async function main() {
         zipCode: "1100",
         emergencyContactName: `Emergency Contact ${i}`,
         emergencyContactNo: `0922000000${i}`,
-        basicRate: "250.00",
+        basicRate: new Prisma.Decimal("250.00"),
         licenseType: "Professional",
         licenseNo: `LICP9${i}`,
         restrictionCodes: ["A", "B"],
@@ -81,11 +150,12 @@ async function main() {
         positionId: 9,
       }
     });
+    await seedBenefitsAndDeductions(emp.id);
   }
 
-  // Seed employees for positionId: 8
+  // Seed employees for positionId: 8 (Conductor)
   for (let i = 1; i <= 10; i++) {
-    await prisma.employee.create({
+    const emp = await prisma.employee.create({
       data: {
         employeeNumber: `EMP2024-P8-${i.toString().padStart(3, '0')}`,
         firstName: `ConductorFirst${i}`,
@@ -103,7 +173,7 @@ async function main() {
         zipCode: "1101",
         emergencyContactName: `Emergency Contact ${i}`,
         emergencyContactNo: `0923000000${i}`,
-        basicRate: "220.00",
+        basicRate: new Prisma.Decimal("220.00"),
         licenseType: "Non-Professional",
         licenseNo: `LICP8${i}`,
         restrictionCodes: ["B", "C"],
@@ -116,9 +186,10 @@ async function main() {
         positionId: 8,
       }
     });
+    await seedBenefitsAndDeductions(emp.id);
   }
 
-  console.log('Departments, positions, and employees seeded successfully.');
+  console.log('BenefitTypes, DeductionTypes, Departments, Positions, Employees, Benefits, and Deductions seeded successfully.');
 }
 
 main()

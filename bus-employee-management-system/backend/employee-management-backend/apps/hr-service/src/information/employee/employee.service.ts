@@ -1,17 +1,15 @@
-/* eslint-disable prettier/prettier */
- 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Employee as PrismaEmployee } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../../prisma/prisma.service'; // adjust path if needed
 
 @Injectable()
 export class EmployeeService {
+  constructor(private prisma: PrismaService) {}
+
   // Find by employeeNumber
   async findByEmployeeNumber(employeeNumber: string) {
-    return prisma.employee.findUnique({
+    return this.prisma.employee.findUnique({
       where: { employeeNumber },
       include: {
         position: { include: { department: true } },
@@ -21,17 +19,14 @@ export class EmployeeService {
 
   // Create an employee
   async create(data: any) {
-    // Remove any address/barangay mapping; use fields as-is
-    // You can validate/transform data here if needed
-
     // Check for existing employeeNumber
-    const exists = await prisma.employee.findUnique({
+    const exists = await this.prisma.employee.findUnique({
       where: { employeeNumber: data.employeeNumber },
     });
     if (exists) {
       throw new Error('Employee with this employeeNumber already exists.');
     }
-    return prisma.employee.create({
+    return this.prisma.employee.create({
       data,
       include: { position: { include: { department: true } } },
     });
@@ -39,7 +34,7 @@ export class EmployeeService {
 
   // Get all employees
   async findAll(): Promise<any[]> {
-    return prisma.employee.findMany({
+    return this.prisma.employee.findMany({
       where: {
         employeeStatus: 'active',
       },
@@ -51,18 +46,17 @@ export class EmployeeService {
               select: {
                 id: true,
                 departmentName: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
   }
 
-
   // Get employee by ID
   async findById(id: string) {
-    const emp = await prisma.employee.findUnique({
+    const emp = await this.prisma.employee.findUnique({
       where: { id },
       include: {
         position: { include: { department: true } },
@@ -74,8 +68,7 @@ export class EmployeeService {
 
   // Update employee
   async update(id: string, data: any) {
-    // No address-barangay mapping needed; just update the data as-is
-    return prisma.employee.update({
+    return this.prisma.employee.update({
       where: { id },
       data,
       include: { position: { include: { department: true } } },
@@ -84,8 +77,7 @@ export class EmployeeService {
 
   // Delete employee
   async remove(id: string) {
-    // This will throw if the ID doesn't exist, which is fine
-    return prisma.employee.delete({
+    return this.prisma.employee.delete({
       where: { id },
     });
   }
@@ -93,7 +85,7 @@ export class EmployeeService {
   // Find employees by position/role name(s)
   async findByRoles(roleNames: string[]): Promise<any[]> {
     if (!roleNames || roleNames.length === 0) return [];
-    return prisma.employee.findMany({
+    return this.prisma.employee.findMany({
       where: {
         position: {
           positionName: {
@@ -107,12 +99,10 @@ export class EmployeeService {
         position: {
           select: {
             positionName: true,
-            department: { select: { departmentName: true } }
-          }
-        }
-      }
+            department: { select: { departmentName: true } },
+          },
+        },
+      },
     });
   }
-
-
 }
