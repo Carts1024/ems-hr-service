@@ -1,9 +1,11 @@
-/* eslint-disable prettier/prettier */
 import {
   IsString,
   IsOptional,
   IsDateString,
   IsInt,
+  IsArray,
+  IsNumber,
+  IsDecimal,
 } from 'class-validator';
 
 export class UpdateEmployeeDto {
@@ -23,6 +25,10 @@ export class UpdateEmployeeDto {
   @IsOptional()
   lastName?: string;
 
+  @IsString()
+  @IsOptional()
+  suffix?: string;
+
   @IsDateString()
   @IsOptional()
   birthdate?: string;
@@ -37,17 +43,77 @@ export class UpdateEmployeeDto {
 
   @IsString()
   @IsOptional()
+  streetAddress?: string;
+
+  @IsString()
+  @IsOptional()
   barangay?: string;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsString()
+  @IsOptional()
+  province?: string;
+
+  @IsString()
+  @IsOptional()
+  country?: string;
 
   @IsString()
   @IsOptional()
   zipCode?: string;
 
-  @IsInt()
+  @IsString()
   @IsOptional()
-  positionId?: number;
+  emergencyContactName?: string;
 
   @IsString()
   @IsOptional()
-  employeeStatus?: string;
+  emergencyContactNo?: string;
+
+  @IsDecimal()
+  @IsOptional()
+  basicPay?: number | string;
+
+  @IsString()
+  @IsOptional()
+  licenseType?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseNo?: string;
+
+  @IsArray()
+  @IsOptional()
+  restrictionCodes?: string[];
+
+  @IsDateString()
+  @IsOptional()
+  expireDate?: string;
+
+  @IsString()
+  @IsOptional()
+  employeeStatus?: string; // default: 'active'
+
+  @IsString()
+  @IsOptional()
+  employeeType?: string; // default: 'regular'
+
+  @IsString()
+  @IsOptional()
+  employeeClassification?: string;
+
+  @IsDateString()
+  @IsOptional()
+  terminationDate?: string;
+
+  @IsString()
+  @IsOptional()
+  terminationReason?: string;
+
+  @IsInt()
+  @IsOptional()
+  positionId?: number;
 }

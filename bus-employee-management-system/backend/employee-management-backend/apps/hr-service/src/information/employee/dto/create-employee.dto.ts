@@ -4,6 +4,9 @@ import {
   IsDateString,
   IsOptional,
   IsInt,
+  IsNumber,
+  IsArray,
+  IsDecimal,
 } from 'class-validator';
 
 export class CreateEmployeeDto {
@@ -23,31 +26,95 @@ export class CreateEmployeeDto {
   @IsNotEmpty()
   lastName: string;
 
+  @IsString()
+  @IsOptional()
+  suffix?: string;
+
   @IsDateString()
   @IsNotEmpty()
   birthdate: string;
 
   @IsDateString()
   @IsNotEmpty()
-  hiredate: string; // Make sure this matches Prisma/DB field
+  hiredate: string;
 
   @IsString()
   @IsNotEmpty()
-  phone: string; // Maps to frontend "contact"
+  phone: string;
+
+  @IsString()
+  @IsOptional()
+  streetAddress?: string;
 
   @IsString()
   @IsNotEmpty()
-  barangay: string; // Will be used as address for now
+  barangay: string;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  province: string;
+
+  @IsString()
+  @IsNotEmpty()
+  country: string;
 
   @IsString()
   @IsNotEmpty()
   zipCode: string;
 
-  @IsInt()
-  @IsNotEmpty()
-  positionId: number; // From dropdown
+  @IsString()
+  @IsOptional()
+  emergencyContactName?: string;
 
   @IsString()
   @IsOptional()
-  employeeStatus?: string; // Maps to frontend "status"
+  emergencyContactNo?: string;
+
+  @IsDecimal()
+  @IsOptional()
+  basicPay?: number | string;
+
+  @IsString()
+  @IsOptional()
+  licenseType?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseNo?: string;
+
+  @IsArray()
+  @IsOptional()
+  restrictionCodes?: string[];
+
+  @IsDateString()
+  @IsOptional()
+  expireDate?: string;
+
+  @IsString()
+  @IsOptional()
+  employeeStatus?: string; // default: 'active'
+
+  @IsString()
+  @IsOptional()
+  employeeType?: string; // default: 'regular'
+
+  @IsString()
+  @IsOptional()
+  employeeClassification?: string;
+
+  @IsDateString()
+  @IsOptional()
+  terminationDate?: string;
+
+  @IsString()
+  @IsOptional()
+  terminationReason?: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  positionId: number;
 }

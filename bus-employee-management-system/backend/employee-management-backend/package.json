@@ -12,6 +12,7 @@
     "start:dev": "nest start --watch",
     "start:dev:auth-ms": "nest start auth-ms --watch",
     "start:dev:gateway": "nest start gateway --watch",
+    "start:dev:hr-service": "nest start hr-service --watch",
     "start:debug": "nest start --debug --watch",
     "start:gateway": "nest start gateway",
     "start:auth-ms": "nest start auth-ms",

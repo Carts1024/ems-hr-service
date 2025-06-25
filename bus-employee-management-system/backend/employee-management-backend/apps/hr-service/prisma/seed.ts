@@ -1,9 +1,10 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Departments and their positions
+  // Seed departments and positions (your original code)
   const data = [
     {
       departmentName: 'Human Resources',
@@ -24,19 +25,15 @@ async function main() {
   ];
 
   for (const dept of data) {
-    // Upsert the department
     const department = await prisma.department.upsert({
       where: { departmentName: dept.departmentName },
       update: {},
       create: { departmentName: dept.departmentName },
     });
 
-    // Seed positions (skip if already exist)
     for (const positionName of dept.positions) {
       await prisma.position.upsert({
         where: {
-          // Combination of positionName and departmentId must be unique
-          // You may want to add a @@unique([positionName, departmentId]) constraint in your schema!
           positionName_departmentId: {
             positionName,
             departmentId: department.id,
@@ -51,7 +48,77 @@ async function main() {
     }
   }
 
-  console.log('Departments and positions seeded successfully.');
+  // Seed employees for positionId: 9
+  for (let i = 1; i <= 10; i++) {
+    await prisma.employee.create({
+      data: {
+        employeeNumber: `EMP2024-P9-${i.toString().padStart(3, '0')}`,
+        firstName: `DriverFirst${i}`,
+        middleName: `M${i}`,
+        lastName: `DriverLast${i}`,
+        suffix: i % 2 === 0 ? "Jr." : null,
+        birthdate: new Date("1990-01-01"),
+        hiredate: new Date("2024-06-01"),
+        phone: `0917000000${i}`,
+        streetAddress: `Street ${i}`,
+        barangay: `Barangay P9`,
+        city: "Sample City",
+        province: "Metro Manila",
+        country: "Philippines",
+        zipCode: "1100",
+        emergencyContactName: `Emergency Contact ${i}`,
+        emergencyContactNo: `0922000000${i}`,
+        basicRate: "250.00",
+        licenseType: "Professional",
+        licenseNo: `LICP9${i}`,
+        restrictionCodes: ["A", "B"],
+        expireDate: new Date("2028-06-01"),
+        employeeStatus: "active",
+        employeeType: "regular",
+        employeeClassification: "full-time",
+        terminationDate: null,
+        terminationReason: null,
+        positionId: 9,
+      }
+    });
+  }
+
+  // Seed employees for positionId: 8
+  for (let i = 1; i <= 10; i++) {
+    await prisma.employee.create({
+      data: {
+        employeeNumber: `EMP2024-P8-${i.toString().padStart(3, '0')}`,
+        firstName: `ConductorFirst${i}`,
+        middleName: `M${i}`,
+        lastName: `ConductorLast${i}`,
+        suffix: i % 2 === 0 ? "Jr." : null,
+        birthdate: new Date("1992-02-02"),
+        hiredate: new Date("2024-06-02"),
+        phone: `0918000000${i}`,
+        streetAddress: `Street ${i}`,
+        barangay: `Barangay P8`,
+        city: "Sample City",
+        province: "Metro Manila",
+        country: "Philippines",
+        zipCode: "1101",
+        emergencyContactName: `Emergency Contact ${i}`,
+        emergencyContactNo: `0923000000${i}`,
+        basicRate: "220.00",
+        licenseType: "Non-Professional",
+        licenseNo: `LICP8${i}`,
+        restrictionCodes: ["B", "C"],
+        expireDate: new Date("2029-07-01"),
+        employeeStatus: "active",
+        employeeType: "regular",
+        employeeClassification: "full-time",
+        terminationDate: null,
+        terminationReason: null,
+        positionId: 8,
+      }
+    });
+  }
+
+  console.log('Departments, positions, and employees seeded successfully.');
 }
 
 main()
