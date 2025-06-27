@@ -10,9 +10,10 @@ import {
 } from 'class-validator';
 
 export class CreateEmployeeDto {
-  @IsString()
-  @IsNotEmpty()
-  employeeNumber: string;
+  // Will be system generated
+  // @IsString()
+  // @IsNotEmpty()
+  // employeeNumber: string;
 
   @IsString()
   @IsNotEmpty()
@@ -29,6 +30,10 @@ export class CreateEmployeeDto {
   @IsString()
   @IsOptional()
   suffix?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
 
   @IsDateString()
   @IsNotEmpty()
@@ -76,7 +81,7 @@ export class CreateEmployeeDto {
 
   @IsDecimal()
   @IsOptional()
-  basicPay?: number | string;
+  basicRate?: number | string;
 
   @IsString()
   @IsOptional()

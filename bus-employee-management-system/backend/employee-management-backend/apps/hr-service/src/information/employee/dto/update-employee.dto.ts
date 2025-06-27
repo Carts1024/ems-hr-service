@@ -29,6 +29,10 @@ export class UpdateEmployeeDto {
   @IsOptional()
   suffix?: string;
 
+  @IsString()
+  @IsOptional()
+  email?: string;
+
   @IsDateString()
   @IsOptional()
   birthdate?: string;
@@ -75,7 +79,7 @@ export class UpdateEmployeeDto {
 
   @IsDecimal()
   @IsOptional()
-  basicPay?: number | string;
+  basicRate?: number | string;
 
   @IsString()
   @IsOptional()

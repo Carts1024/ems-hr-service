@@ -1,62 +1,24 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Benefit, BenefitType } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class BenefitsService {
-  // List all benefit types
-  async getAllBenefitTypes(): Promise<BenefitType[]> {
-    return prisma.benefitType.findMany();
-  }
+  constructor(private prisma: PrismaService) {}
+  // ===== Global Benefits CRUD (Admin) =====
 
-  // Get a single benefit type by id
-  async getBenefitTypeById(id: number): Promise<BenefitType> {
-    const type = await prisma.benefitType.findUnique({ where: { id } });
-    if (!type) throw new NotFoundException('Benefit type not found');
-    return type;
-  }
-
-  // Create a benefit type
-  async createBenefitType(data: { name: string; description?: string }): Promise<BenefitType> {
-    return prisma.benefitType.create({ data });
-  }
-
-  // Update a benefit type
-  async updateBenefitType(id: number, data: { name?: string; description?: string }): Promise<BenefitType> {
-    const type = await prisma.benefitType.update({
-      where: { id },
-      data,
-    });
-    if (!type) throw new NotFoundException('Benefit type not found');
-    return type;
-  }
-
-  // Delete a benefit type
-  async deleteBenefitType(id: number): Promise<{ message: string }> {
-    await prisma.benefitType.delete({ where: { id } });
-    return { message: 'Benefit type deleted successfully' };
-  }
-
-  // ===== BENEFITS CRUD =====
-
-  // Get all benefits (optionally, you can filter by employeeId later)
-  async getAllBenefits(): Promise<Benefit[]> {
-    return prisma.benefit.findMany({
+  async getAllBenefits() {
+    return this.prisma.benefit.findMany({
       include: { benefitType: true, employee: true },
     });
   }
 
-  // Get one benefit by ID
-  async getBenefitById(id: number): Promise<Benefit> {
-    const benefit = await prisma.benefit.findUnique({
+  async getBenefitById(id: number) {
+    const benefit = await this.prisma.benefit.findUnique({
       where: { id },
       include: { benefitType: true, employee: true },
     });
@@ -64,23 +26,20 @@ export class BenefitsService {
     return benefit;
   }
 
-  // Create a benefit
   async createBenefit(data: {
     employeeId: string;
     benefitTypeId: number;
-    type: string;
     value: number;
     frequency: string;
     effectiveDate: string;
     endDate?: string;
     isActive?: boolean;
-  }): Promise<Benefit> {
-    return prisma.benefit.create({
+  }) {
+    return this.prisma.benefit.create({
       data: {
         employeeId: data.employeeId,
         benefitTypeId: data.benefitTypeId,
-        type: data.type,
-        value: new Decimal(data.value), 
+        value: new Decimal(data.value),
         frequency: data.frequency,
         effectiveDate: new Date(data.effectiveDate),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
@@ -90,16 +49,14 @@ export class BenefitsService {
     });
   }
 
-  // Update a benefit
-  async updateBenefit(id: number, data: Partial<Omit<Benefit, 'id'>>): Promise<Benefit> {
-    // No need to convert value to Decimal here if controller already does it
+  async updateBenefit(id: number, data: any) {
     if (data.effectiveDate && typeof data.effectiveDate === 'string') {
-      (data as any).effectiveDate = new Date(data.effectiveDate);
+      data.effectiveDate = new Date(data.effectiveDate);
     }
     if (data.endDate && typeof data.endDate === 'string') {
-      (data as any).endDate = new Date(data.endDate);
+      data.endDate = new Date(data.endDate);
     }
-    const updated = await prisma.benefit.update({
+    const updated = await this.prisma.benefit.update({
       where: { id },
       data,
       include: { benefitType: true, employee: true },
@@ -108,11 +65,55 @@ export class BenefitsService {
     return updated;
   }
 
-
-  // Delete a benefit
-  async deleteBenefit(id: number): Promise<{ message: string }> {
-    await prisma.benefit.delete({ where: { id } });
+  async deleteBenefit(id: number) {
+    await this.prisma.benefit.delete({ where: { id } });
     return { message: 'Benefit deleted successfully' };
   }
 
+  // ===== Employee-centric Methods =====
+
+  async getBenefitsByEmployee(employeeId: string) {
+    return this.prisma.benefit.findMany({
+      where: { employeeId },
+      include: { benefitType: true, employee: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(employeeId: string, id: number) {
+    const benefit = await this.prisma.benefit.findFirst({
+      where: { id, employeeId },
+      include: { benefitType: true, employee: true },
+    });
+    if (!benefit) throw new NotFoundException('Benefit not found');
+    return benefit;
+  }
+
+  async update(employeeId: string, id: number, data: any) {
+    // Optionally validate benefit exists and belongs to the employee
+    const benefit = await this.prisma.benefit.findFirst({ where: { id, employeeId } });
+    if (!benefit) throw new NotFoundException('Benefit not found');
+    if (data.value !== undefined && typeof data.value === 'number') {
+      data.value = new Decimal(data.value);
+    }
+    if (data.effectiveDate && typeof data.effectiveDate === 'string') {
+      data.effectiveDate = new Date(data.effectiveDate);
+    }
+    if (data.endDate && typeof data.endDate === 'string') {
+      data.endDate = new Date(data.endDate);
+    }
+    return this.prisma.benefit.update({
+      where: { id },
+      data,
+      include: { benefitType: true, employee: true },
+    });
+  }
+
+  async remove(employeeId: string, id: number) {
+    // Optionally validate benefit exists and belongs to the employee
+    const benefit = await this.prisma.benefit.findFirst({ where: { id, employeeId } });
+    if (!benefit) throw new NotFoundException('Benefit not found');
+    await this.prisma.benefit.delete({ where: { id } });
+    return { message: 'Benefit deleted successfully' };
+  }
 }

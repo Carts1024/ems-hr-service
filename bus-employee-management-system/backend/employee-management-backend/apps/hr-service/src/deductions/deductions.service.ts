@@ -1,54 +1,24 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Deduction, DeductionType } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class DeductionsService {
-  // List all deduction types
-  async getAllDeductionTypes(): Promise<DeductionType[]> {
-    return prisma.deductionType.findMany();
-  }
+  constructor(private prisma: PrismaService) {}
 
-  // Get a single deduction type by id
-  async getDeductionTypeById(id: number): Promise<DeductionType> {
-    const type = await prisma.deductionType.findUnique({ where: { id } });
-    if (!type) throw new NotFoundException('Deduction type not found');
-    return type;
-  }
+  // ===== Global Deduction CRUD (Admin/All) =====
 
-  // Create a deduction type
-  async createDeductionType(data: { name: string; description?: string }): Promise<DeductionType> {
-    return prisma.deductionType.create({ data });
-  }
-
-  // Update a deduction type
-  async updateDeductionType(id: number, data: { name?: string; description?: string }): Promise<DeductionType> {
-    const type = await prisma.deductionType.update({
-      where: { id },
-      data,
-    });
-    if (!type) throw new NotFoundException('Deduction type not found');
-    return type;
-  }
-
-  // Delete a deduction type
-  async deleteDeductionType(id: number): Promise<{ message: string }> {
-    await prisma.deductionType.delete({ where: { id } });
-    return { message: 'Deduction type deleted successfully' };
-  }
-
-  // ==== Deductions ====
-  async getAllDeductions(): Promise<Deduction[]> {
-    return prisma.deduction.findMany({
+  async getAllDeductions() {
+    return this.prisma.deduction.findMany({
       include: { deductionType: true, employee: true },
     });
   }
 
-  async getDeductionById(id: number): Promise<Deduction> {
-    const deduction = await prisma.deduction.findUnique({
+  async getDeductionById(id: number) {
+    const deduction = await this.prisma.deduction.findUnique({
       where: { id },
       include: { deductionType: true, employee: true },
     });
@@ -59,17 +29,19 @@ export class DeductionsService {
   async createDeduction(data: {
     employeeId: string;
     deductionTypeId: number;
-    amount: number;
+    type: string;
+    value: number;
     frequency: string;
     effectiveDate: string;
     endDate?: string;
     isActive?: boolean;
-  }): Promise<Deduction> {
-    return prisma.deduction.create({
+  }) {
+    return this.prisma.deduction.create({
       data: {
         employeeId: data.employeeId,
         deductionTypeId: data.deductionTypeId,
-        amount: new Decimal(data.amount),
+        type: data.type,
+        value: new Decimal(data.value),
         frequency: data.frequency,
         effectiveDate: new Date(data.effectiveDate),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
@@ -79,8 +51,15 @@ export class DeductionsService {
     });
   }
 
-  async updateDeduction(id: number, data: Partial<Omit<Deduction, 'id'>>): Promise<Deduction> {
-    const updated = await prisma.deduction.update({
+  async updateDeduction(id: number, data: any) {
+    if (data.value !== undefined) data.value = new Decimal(data.value); // FIXED
+    if (data.effectiveDate && typeof data.effectiveDate === 'string') {
+      data.effectiveDate = new Date(data.effectiveDate);
+    }
+    if (data.endDate && typeof data.endDate === 'string') {
+      data.endDate = new Date(data.endDate);
+    }
+    const updated = await this.prisma.deduction.update({
       where: { id },
       data,
       include: { deductionType: true, employee: true },
@@ -89,8 +68,66 @@ export class DeductionsService {
     return updated;
   }
 
-  async deleteDeduction(id: number): Promise<{ message: string }> {
-    await prisma.deduction.delete({ where: { id } });
+  async deleteDeduction(id: number) {
+    await this.prisma.deduction.delete({ where: { id } });
+    return { message: 'Deduction deleted successfully' };
+  }
+
+  // ===== Employee-centric Methods =====
+
+  async getDeductionsByEmployee(employeeId: string) {
+    return this.prisma.deduction.findMany({
+      where: { employeeId },
+      include: { deductionType: true, employee: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOne(employeeId: string, id: number) {
+    const deduction = await this.prisma.deduction.findFirst({
+      where: { id, employeeId },
+      include: { deductionType: true, employee: true },
+    });
+    if (!deduction) throw new NotFoundException('Deduction not found');
+    return deduction;
+  }
+
+  async update(employeeId: string, id: number, data: any) {
+    const deduction = await this.prisma.deduction.findFirst({
+      where: { id, employeeId },
+    });
+    if (!deduction) throw new NotFoundException('Deduction not found');
+
+    // Handle decimal value if needed
+    if (data.value !== undefined) data.value = new Decimal(data.value);
+
+    // Parse dates
+    if (data.effectiveDate && typeof data.effectiveDate === 'string') {
+      data.effectiveDate = new Date(data.effectiveDate);
+    }
+    if (data.endDate && typeof data.endDate === 'string') {
+      data.endDate = new Date(data.endDate);
+    }
+
+    // Handle deductionType relation
+    if (data.deductionTypeId) {
+      data.deductionType = { connect: { id: data.deductionTypeId } };
+      delete data.deductionTypeId;
+    }
+
+    return this.prisma.deduction.update({
+      where: { id },
+      data,
+      include: { deductionType: true, employee: true },
+    });
+  }
+
+  async remove(employeeId: string, id: number) {
+    const deduction = await this.prisma.deduction.findFirst({
+      where: { id, employeeId },
+    });
+    if (!deduction) throw new NotFoundException('Deduction not found');
+    await this.prisma.deduction.delete({ where: { id } });
     return { message: 'Deduction deleted successfully' };
   }
 }
