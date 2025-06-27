@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -37,29 +38,43 @@ export class EmployeeService {
 
   // Create an employee
   async create(data: any) {
-    // 1. Process dates so any string format will be accepted
+    // 1. Helper function to convert to Date or undefined
+    const toDateOrUndefined = (val: any) => val ? new Date(val) : undefined;
+
+    // 2. Process dates in root
     const processedData: any = { ...data };
+    processedData.birthdate = toDateOrUndefined(processedData.birthdate);
+    processedData.hiredate = toDateOrUndefined(processedData.hiredate);
+    processedData.expireDate = toDateOrUndefined(processedData.expireDate);
+    processedData.terminationDate = toDateOrUndefined(processedData.terminationDate);
 
-    if (processedData.birthdate) {
-      processedData.birthdate = new Date(processedData.birthdate);
-    }
-    if (processedData.hiredate) {
-      processedData.hiredate = new Date(processedData.hiredate);
-    }
-    if (processedData.expireDate) {
-      processedData.expireDate = new Date(processedData.expireDate);
-    }
-    if (processedData.terminationDate) {
-      processedData.terminationDate = new Date(processedData.terminationDate);
+    // 3. Destructure out nested relations
+    const {
+      governmentIDs,
+      workExperiences,
+      educations,
+      benefits,
+      deductions,
+      ...rest
+    } = processedData;
+
+    // 4. Convert dates in nested governmentIDs
+    let governmentIDsInput;
+    if (governmentIDs && Array.isArray(governmentIDs) && governmentIDs.length > 0) {
+      governmentIDsInput = governmentIDs.map((g: any) => ({
+        ...g,
+        issuedDate: toDateOrUndefined(g.issuedDate),
+        expiryDate: toDateOrUndefined(g.expiryDate),
+      }));
     }
 
-    // 2. Get the hire year from hiredate
+    // 5. Get the hire year for employee number
     if (!processedData.hiredate || isNaN(processedData.hiredate.getTime())) {
       throw new Error('Valid hiredate is required for employee number generation.');
     }
     const hireYear = processedData.hiredate.getFullYear();
 
-    // 3. Generate employeeNumber in format: EMP-<YEAR>-<RandomString>
+    // 6. Generate employee number
     let employeeNumber: string;
     let exists = true;
     do {
@@ -71,29 +86,40 @@ export class EmployeeService {
       exists = !!found;
     } while (exists);
 
-    // 4. Create the employee (with nested creates if provided)
+    // 7. Build data object (no undefined for nested creates)
+    const prismaData: any = {
+      ...rest,
+      employeeNumber,
+    };
+
+    if (workExperiences && Array.isArray(workExperiences) && workExperiences.length > 0)
+      prismaData.workExperiences = { create: workExperiences };
+    if (educations && Array.isArray(educations) && educations.length > 0)
+      prismaData.educations = { create: educations };
+    if (governmentIDsInput && governmentIDsInput.length > 0)
+      prismaData.governmentIDs = { create: governmentIDsInput };
+    if (benefits && Array.isArray(benefits) && benefits.length > 0)
+      prismaData.benefits = { create: benefits };
+    if (deductions && Array.isArray(deductions) && deductions.length > 0)
+      prismaData.deductions = { create: deductions };
+
+    // 8. Create the employee
+    console.log('governmentIDs input to Prisma:', JSON.stringify(governmentIDsInput, null, 2));
+    console.log('prismaData:', JSON.stringify(prismaData, null, 2));
+
     return this.prisma.employee.create({
-      data: {
-        ...processedData,
-        employeeNumber,
-        workExperiences: processedData.workExperiences,
-        educations: processedData.educations,
-        governmentIDs: processedData.governmentIDs,
-        benefits: processedData.benefits,
-        deductions: processedData.deductions,
-      },
+      data: prismaData,
       include: {
-        position: {
-          include: { department: true },
-        },
+        position: { include: { department: true } },
         workExperiences: true,
         educations: true,
-        governmentIDs: true,
+        governmentIDs: { include: { type: true } },
         benefits: true,
         deductions: true,
       },
     });
   }
+
   // Get all employees
   async findAll(): Promise<any[]> {
     return this.prisma.employee.findMany({

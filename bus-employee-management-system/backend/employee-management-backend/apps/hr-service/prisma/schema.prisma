@@ -1,10 +1,3 @@
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,279 +7,249 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Department Model
 model Department {
-  id             Int        @id @default(autoincrement())
-  departmentName String     @unique
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-
-  positions      Position[]
+  id             Int         @id @default(autoincrement())
+  departmentName String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   candidates     Candidate[]
+  positions      Position[]
 }
 
-// Position Model
 model Position {
-  id            Int         @id @default(autoincrement())
-  positionName  String
-  departmentId  Int
-  department    Department  @relation(fields: [departmentId], references: [id])
-  employees     Employee[]
+  id           Int         @id @default(autoincrement())
+  positionName String
+  departmentId Int
+  candidates   Candidate[]
+  employees    Employee[]
+  department   Department  @relation(fields: [departmentId], references: [id])
 
   @@unique([positionName, departmentId])
-  candidates    Candidate[] // Positions can also be linked to candidates
 }
 
-// Employee Model
 model Employee {
-  id                     String      @id @default(cuid())
-  employeeNumber         String      @unique
+  id                     String               @id @default(cuid())
+  employeeNumber         String               @unique
   firstName              String
-  middleName             String?
   lastName               String
-  suffix                 String?
-  email                  String?     @unique
   birthdate              DateTime
   hiredate               DateTime
-  phone                  String
-  streetAddress          String
-  barangay               String
-  city                   String
-  province               String
-  zipCode                String
-  country                String
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  positionId             Int
   emergencyContactName   String?
   emergencyContactNo     String?
-  basicRate               Decimal?
-  licenseType            String?
-  licenseNo              String?
-  restrictionCodes       String[] @default([])
   expireDate             DateTime?
-  employeeStatus         String      @default("active") // (e.g., 'active', 'inactive', 'terminated', 'On Leave')
-  employeeType           String      @default("regular") // (e.g., 'regular', 'contractual', 'probationary', 'temporary')
-  employeeClassification String?     // (e.g., 'full-time', 'part-time', 'intern', 'freelancer')
+  licenseNo              String?
+  licenseType            String?
+  middleName             String?
+  restrictionCodes       String[]             @default([])
+  barangay               String
+  employeeStatus         String               @default("active")
+  phone                  String
+  zipCode                String
+  city                   String
+  country                String
+  employeeClassification String?
+  employeeType           String               @default("regular")
+  province               String
+  streetAddress          String
+  suffix                 String?
   terminationDate        DateTime?
   terminationReason      String?
-
-  createdAt              DateTime   @default(now())
-  updatedAt              DateTime   @updatedAt
-
-  positionId             Int
-  position               Position    @relation(fields: [positionId], references: [id])
-
+  basicRate              Decimal?
+  email                  String?              @unique
+  attendances            Attendance[]
   benefits               Benefit[]
+  cashAdvanceRequests    CashAdvanceRequest[]
   deductions             Deduction[]
-  attendances           Attendance[]
-  governmentIDs         GovernmentID[]
-  workExperiences       WorkExperience[]
-  educations            Education[]
-  cashAdvanceRequests   CashAdvanceRequest[]
-  resignationRequests   ResignationRequest[]
-  leaveRequests         LeaveRequest[]
+  educations             Education[]
+  position               Position             @relation(fields: [positionId], references: [id])
+  governmentIDs          GovernmentID[]
+  leaveRequests          LeaveRequest[]
+  resignationRequests    ResignationRequest[]
+  workExperiences        WorkExperience[]
 }
 
-// Benefit Model
-model Benefit { //13th month
-  id            Int       @id @default(autoincrement())
+model Benefit {
+  id            Int         @id @default(autoincrement())
   employeeId    String
-  employee      Employee  @relation(fields: [employeeId], references: [id])
-  value         Decimal   // if type is 'percentage', value = percent (e.g., 10 for 10%), if 'fixed', value = amount (e.g., 300)
+  value         Decimal
   frequency     String?
   effectiveDate DateTime
   endDate       DateTime?
-  benefitTypeId Int // Name of the benefit type (e.g., '13th month', 'Health Insurance', etc.)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  benefitTypeId Int
   benefitType   BenefitType @relation(fields: [benefitTypeId], references: [id])
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  employee      Employee    @relation(fields: [employeeId], references: [id])
 }
 
-// Deduction Model
-model Deduction { // e.g., SSS, PhilHealth, Pag-IBIG, Tax, etc.
-  id            Int       @id @default(autoincrement())
-  employeeId    String
-  employee      Employee  @relation(fields: [employeeId], references: [id])
-  type          String    // 'fixed' or 'percentage'
-  value        Decimal
-  frequency     String    // ex: 'one_time', 'daily', 'weekly', 'monthly', 'yearly'
-  effectiveDate DateTime
-  endDate       DateTime?
-  isActive      Boolean   @default(true)
-  deductionTypeId Int // Name of the deduction type
+model Deduction {
+  id              Int           @id @default(autoincrement())
+  employeeId      String
+  frequency       String
+  effectiveDate   DateTime
+  endDate         DateTime?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deductionTypeId Int
+  type            String
+  value           Decimal
   deductionType   DeductionType @relation(fields: [deductionTypeId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  employee        Employee      @relation(fields: [employeeId], references: [id])
 }
 
 model Attendance {
-  id           Int        @id @default(autoincrement())
-  employeeId   String
-  employee     Employee   @relation(fields: [employeeId], references: [id])
-  date         DateTime   // the date of attendance
-  status       String     // ex: 'Present', 'Absent', 'On Leave', 'Late', etc.
-  timeIn       DateTime?  
-  timeOut      DateTime?  
-  remarks      String?    
-  isHoliday    Boolean    @default(false)
-
-  // Overtime fields (optional)
-  overtimeHours Float?    // ex: 2.5 means 2 hours, 30 mins overtime
-  overtimeReason String?  // optional: why overtime?
-
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             Int       @id @default(autoincrement())
+  employeeId     String
+  date           DateTime
+  status         String
+  timeIn         DateTime?
+  timeOut        DateTime?
+  remarks        String?
+  isHoliday      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  overtimeHours  Float?
+  overtimeReason String?
+  employee       Employee  @relation(fields: [employeeId], references: [id])
 
   @@unique([employeeId, date])
 }
 
-// Government ID Model
 model GovernmentID {
-  id           Int       @id @default(autoincrement())
-  employeeId   String
-  employee     Employee  @relation(fields: [employeeId], references: [id])
-  typeId         Int              // Foreign key
-  type           GovernmentIDType @relation(fields: [typeId], references: [id])
-  idNumber     String
-  issuedDate   DateTime?
-  expiryDate   DateTime?
-  isActive     Boolean   @default(true)
+  id         Int              @id @default(autoincrement())
+  employeeId String
+  idNumber   String
+  issuedDate DateTime?
+  expiryDate DateTime?
+  isActive   Boolean          @default(true)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  typeId     Int
+  employee   Employee         @relation(fields: [employeeId], references: [id])
+  type       GovernmentIDType @relation(fields: [typeId], references: [id])
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  @@unique([employeeId, typeId]) // Only one per type per employee
+  @@unique([employeeId, typeId])
 }
 
-// Work Experience Model
 model WorkExperience {
+  id          Int       @id @default(autoincrement())
+  employeeId  String
+  companyName String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Education {
   id           Int       @id @default(autoincrement())
   employeeId   String
-  employee     Employee  @relation(fields: [employeeId], references: [id])
-  companyName  String
-  position     String
-  startDate    DateTime
+  institution  String?
+  degree       String?
+  fieldOfStudy String?
+  startDate    DateTime?
   endDate      DateTime?
-  description  String?   // e.g., duties or achievements
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-}
-
-// Education Model
-model Education {
-  id             Int       @id @default(autoincrement())
-  employeeId     String
-  employee       Employee  @relation(fields: [employeeId], references: [id])
-  institution    String?
-  degree         String?
-  fieldOfStudy   String?
-  startDate      DateTime?
-  endDate        DateTime?
-  honors         String?   // e.g., "cum laude"
-  description    String?   // e.g., awards, projects
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-// Cash Advance Request Model
-model CashAdvanceRequest {
-  id             Int       @id @default(autoincrement())
-  employeeId     String
-  employee       Employee  @relation(fields: [employeeId], references: [id])
-  amount         Decimal
-  reason         String?
-  requestDate    DateTime  @default(now())
-  status         String    // e.g., 'pending', 'approved', 'rejected'
-  approvedDate   DateTime?
-  remarks        String?
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-// Resignation Request Model
-model ResignationRequest {
-  id             Int       @id @default(autoincrement())
-  employeeId     String
-  employee       Employee  @relation(fields: [employeeId], references: [id])
-  reason         String?
-  requestDate    DateTime  @default(now())
-  effectiveDate  DateTime
-  status         String    // e.g., 'pending', 'accepted', 'rejected'
-  remarks        String?
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-// Leave Request Model
-model LeaveRequest {
-  id             Int       @id @default(autoincrement())
-  employeeId     String
-  employee       Employee  @relation(fields: [employeeId], references: [id])
-  leaveType      String    // e.g., 'Sick', 'Vacation', 'Maternity', etc.
-  startDate      DateTime
-  endDate        DateTime
-  reason         String?
-  status         String    // e.g., 'pending', 'approved', 'rejected'
-  requestDate    DateTime  @default(now())
-  approvedDate   DateTime?
-  remarks        String?
-
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-}
-
-model Candidate {
-  id             String    @id @default(cuid())
-  firstName      String
-  middleName     String?
-  lastName       String
-  suffix         String?
-  email          String?
-  streetAddress  String
-  barangay       String
-  city           String
-  province       String
-  country        String
-  birthdate      DateTime
-
-  // Onboarding/Application fields
-  applicationStatus  String   // e.g., 'hired', 'pending', 'processing'
-  applicationDate    DateTime
-  sourceOfHire       String?  // e.g., 'LinkedIn', 'Referral'
-  departmentId       Int
-  department         Department @relation(fields: [departmentId], references: [id])
-  desiredPositionId  Int
-  position           Position @relation(fields: [desiredPositionId], references: [id])
-  interviewDate      DateTime?
-
-  // Relationships
-  workExperiences    CandidateWorkExperience[]
-  educations         CandidateEducation[]
-
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-}
-
-model CandidateWorkExperience {
-  id           Int      @id @default(autoincrement())
-  candidateId  String
-  candidate    Candidate @relation(fields: [candidateId], references: [id])
-  companyName  String
-  position     String
-  startDate    DateTime
-  endDate      DateTime?
+  honors       String?
   description  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model CashAdvanceRequest {
+  id           Int       @id @default(autoincrement())
+  employeeId   String
+  amount       Decimal
+  reason       String?
+  requestDate  DateTime  @default(now())
+  status       String
+  approvedDate DateTime?
+  remarks      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model ResignationRequest {
+  id            Int      @id @default(autoincrement())
+  employeeId    String
+  reason        String?
+  requestDate   DateTime @default(now())
+  effectiveDate DateTime
+  status        String
+  remarks       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model LeaveRequest {
+  id           Int       @id @default(autoincrement())
+  employeeId   String
+  leaveType    String
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  status       String
+  requestDate  DateTime  @default(now())
+  approvedDate DateTime?
+  remarks      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Candidate {
+  id                String                    @id @default(cuid())
+  firstName         String
+  middleName        String?
+  lastName          String
+  suffix            String?
+  email             String?
+  streetAddress     String
+  barangay          String
+  city              String
+  province          String
+  country           String
+  birthdate         DateTime
+  applicationStatus String
+  applicationDate   DateTime
+  sourceOfHire      String?
+  departmentId      Int
+  desiredPositionId Int
+  interviewDate     DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  department        Department                @relation(fields: [departmentId], references: [id])
+  position          Position                  @relation(fields: [desiredPositionId], references: [id])
+  educations        CandidateEducation[]
+  workExperiences   CandidateWorkExperience[]
+}
+
+model CandidateWorkExperience {
+  id          Int       @id @default(autoincrement())
+  candidateId String
+  companyName String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
 }
 
 model CandidateEducation {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   candidateId  String
-  candidate    Candidate @relation(fields: [candidateId], references: [id])
   institution  String
   degree       String
   fieldOfStudy String?
@@ -296,6 +259,7 @@ model CandidateEducation {
   description  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  candidate    Candidate @relation(fields: [candidateId], references: [id])
 }
 
 model BenefitType {
@@ -306,15 +270,15 @@ model BenefitType {
 }
 
 model DeductionType {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
   description String?
   deductions  Deduction[]
 }
 
 model GovernmentIDType {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique   // e.g., 'SSS', 'PhilHealth', 'Pag-IBIG', 'TIN'
-  description String?
-  governmentIDs GovernmentID[] // Relation to GovernmentID
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  description   String?
+  governmentIDs GovernmentID[]
 }

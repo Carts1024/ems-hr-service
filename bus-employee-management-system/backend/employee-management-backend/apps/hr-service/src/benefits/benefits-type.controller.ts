@@ -11,7 +11,8 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { BenefitsTypeService } from './benefits-type.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { CreateBenefitTypeDto } from './dto/create-benefit-type.dto';
+import { UpdateBenefitTypeDto } from './dto/update-benefit-type.dto';
 
 @Controller('benefit')
 export class BenefitsTypeController {
@@ -31,17 +32,17 @@ export class BenefitsTypeController {
 
   // POST /benefits/types
   @Post('types')
-  async createBenefitType(@Body() body: { name: string; description?: string }) {
-    return this.benefitsTypeService.createBenefitType(body);
+  async createBenefitType(@Body() createBenefitTypeDto: CreateBenefitTypeDto) {
+    return this.benefitsTypeService.createBenefitType(createBenefitTypeDto);
   }
 
   // PATCH /benefits/types/:id
   @Patch('types/:id')
   async updateBenefitType(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { name?: string; description?: string }
+    @Body() updateBenefitTypeDto: UpdateBenefitTypeDto
   ) {
-    return this.benefitsTypeService.updateBenefitType(id, body);
+    return this.benefitsTypeService.updateBenefitType(id, updateBenefitTypeDto);
   }
 
   // DELETE /benefits/types/:id
