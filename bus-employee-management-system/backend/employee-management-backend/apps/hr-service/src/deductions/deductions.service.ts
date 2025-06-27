@@ -97,13 +97,24 @@ export class DeductionsService {
       where: { id, employeeId },
     });
     if (!deduction) throw new NotFoundException('Deduction not found');
-    if (data.value !== undefined) data.value = new Decimal(data.value); // FIXED
+
+    // Handle decimal value if needed
+    if (data.value !== undefined) data.value = new Decimal(data.value);
+
+    // Parse dates
     if (data.effectiveDate && typeof data.effectiveDate === 'string') {
       data.effectiveDate = new Date(data.effectiveDate);
     }
     if (data.endDate && typeof data.endDate === 'string') {
       data.endDate = new Date(data.endDate);
     }
+
+    // Handle deductionType relation
+    if (data.deductionTypeId) {
+      data.deductionType = { connect: { id: data.deductionTypeId } };
+      delete data.deductionTypeId;
+    }
+
     return this.prisma.deduction.update({
       where: { id },
       data,

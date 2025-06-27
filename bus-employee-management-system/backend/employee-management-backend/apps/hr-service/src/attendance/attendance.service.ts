@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { startOfDay, endOfDay } from 'date-fns'; 
 
 @Injectable()
 export class AttendanceService {
@@ -74,4 +75,16 @@ export class AttendanceService {
     });
     }
 
+  async getAttendancesByDate(date: Date) {
+    return this.prisma.attendance.findMany({
+      where: {
+        date: {
+          gte: startOfDay(date),
+          lte: endOfDay(date),
+        },
+      },
+      include: { employee: true },
+      orderBy: { employeeId: 'asc' },
+    });
+  }
 }

@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   Body,
+  Query,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 
@@ -20,6 +21,11 @@ export class AttendanceController {
     return this.attendanceService.getAllAttendances();
   }
 
+  @Get('date/:date')
+  getAttendancesByDate(@Param('date') dateString: string) {
+    const date = new Date(dateString);
+    return this.attendanceService.getAttendancesByDate(date);
+  }
   // Get a single attendance by id
   @Get(':id')
   getAttendanceById(@Param('id') id: string) {

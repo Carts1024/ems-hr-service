@@ -18,7 +18,6 @@ export class DeductionsTypeController {
 
     @Get('types')
     async getAllDeductionTypes() {
-    console.log('HIT getAllDeductionTypes');
     return this.deductionsTypeService.getAllDeductionTypes();
     }
 

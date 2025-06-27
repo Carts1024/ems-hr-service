@@ -90,8 +90,7 @@ async function main() {
       await prisma.benefit.create({
         data: {
           employeeId,
-          benefitTypeId: benefitType.id,
-          type: 'fixed',                            // or "percentage"
+          benefitTypeId: benefitType.id,                          // or "percentage"
           value: new Prisma.Decimal(100 + benefitType.id * 10), // just sample different values
           frequency: 'monthly',
           effectiveDate: new Date("2024-07-01"),
@@ -106,7 +105,8 @@ async function main() {
         data: {
           employeeId,
           deductionTypeId: deductionType.id,
-          amount: new Prisma.Decimal(50 + deductionType.id * 5), // just sample different values
+          type: 'fixed',  
+          value: new Prisma.Decimal(50 + deductionType.id * 5), // just sample different values
           frequency: 'monthly',
           effectiveDate: new Date("2024-07-01"),
           endDate: null,
