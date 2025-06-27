@@ -10,6 +10,8 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { DeductionsTypeService } from './deductions-type.service';
+import { CreateDeductionTypeDto } from './dto/create-deduction-type.dto';
+import { UpdateDeductionTypeDto } from './dto/update-deduction-type.dto';
 
 @Controller('deduction')
 export class DeductionsTypeController {
@@ -28,23 +30,23 @@ export class DeductionsTypeController {
     }
 
   // POST /deductions/types
-  @Post('types')
-  async createDeductionType(@Body() body: { name: string; description?: string }) {
-    return this.deductionsTypeService.createDeductionType(body);
-  }
+    @Post('types')
+    async createDeductionType(@Body() createDeductionTypeDto: CreateDeductionTypeDto) {
+      return this.deductionsTypeService.createDeductionType(createDeductionTypeDto);
+    }
 
   // PATCH /deductions/types/:id
-  @Patch('types/:id')
-  async updateDeductionType(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { name?: string; description?: string }
-  ) {
-    return this.deductionsTypeService.updateDeductionType(id, body);
-  }
+    @Patch('types/:id')
+    async updateDeductionType(
+      @Param('id', ParseIntPipe) id: number,
+      @Body() updateDeductionTypeDto: UpdateDeductionTypeDto
+    ) {
+      return this.deductionsTypeService.updateDeductionType(id, updateDeductionTypeDto);
+    }
 
-  // DELETE /deductions/types/:id
-  @Delete('types/:id')
-  async deleteDeductionType(@Param('id', ParseIntPipe) id: number) {
-    return this.deductionsTypeService.deleteDeductionType(id);
-  }
+    // DELETE /deductions/types/:id
+    @Delete('types/:id')
+    async deleteDeductionType(@Param('id', ParseIntPipe) id: number) {
+      return this.deductionsTypeService.deleteDeductionType(id);
+    }
 }

@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { CreateBenefitTypeDto } from './dto/create-benefit-type.dto';
+import { UpdateBenefitTypeDto } from './dto/update-benefit-type.dto';
 
 @Injectable()
 export class BenefitsTypeService {
@@ -20,15 +21,25 @@ export class BenefitsTypeService {
   }
 
   // Create a benefit type
-  async createBenefitType(data: { name: string; description?: string }) {
-    return this.prisma.benefitType.create({ data });
+  async createBenefitType(createBenefitTypeDto: CreateBenefitTypeDto) {
+    // Filter out any unwanted fields (like id) that might come from frontend
+    const cleanData = {
+      name: createBenefitTypeDto.name,
+      description: createBenefitTypeDto.description,
+    };
+    return this.prisma.benefitType.create({ data: cleanData });
   }
 
   // Update a benefit type
-  async updateBenefitType(id: number, data: { name?: string; description?: string }) {
+  async updateBenefitType(id: number, updateBenefitTypeDto: UpdateBenefitTypeDto) {
+    // Filter out any unwanted fields (like id) that might come from frontend
+    const cleanData: { name?: string; description?: string } = {};
+    if (updateBenefitTypeDto.name !== undefined) cleanData.name = updateBenefitTypeDto.name;
+    if (updateBenefitTypeDto.description !== undefined) cleanData.description = updateBenefitTypeDto.description;
+    
     const type = await this.prisma.benefitType.update({
       where: { id },
-      data,
+      data: cleanData,
     });
     if (!type) throw new NotFoundException('Benefit type not found');
     return type;

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { CreateDeductionTypeDto } from './dto/create-deduction-type.dto';
+import { UpdateDeductionTypeDto } from './dto/update-deduction-type.dto';
 
 @Injectable()
 export class DeductionsTypeService {
@@ -19,18 +20,32 @@ export class DeductionsTypeService {
   }
 
   // Create a deduction type
-  async createDeductionType(data: { name: string; description?: string }) {
-    return this.prisma.deductionType.create({ data });
+  async createDeductionType(createDeductionTypeDto: CreateDeductionTypeDto) {
+    // Filter out any unwanted fields (like id) that might come from frontend
+    const cleanData = {
+      name: createDeductionTypeDto.name,
+      description: createDeductionTypeDto.description,
+    };
+    return this.prisma.deductionType.create({ data: cleanData });
   }
 
   // Update a deduction type
   async updateDeductionType(
     id: number,
-    data: { name?: string; description?: string },
+    updateDeductionTypeDto: UpdateDeductionTypeDto,
   ) {
+    // Filter out any unwanted fields (like id) that might come from frontend
+    const cleanData: { name?: string; description?: string } = {};
+    if (updateDeductionTypeDto.name !== undefined) {
+      cleanData.name = updateDeductionTypeDto.name;
+    }
+    if (updateDeductionTypeDto.description !== undefined) {
+      cleanData.description = updateDeductionTypeDto.description;
+    }
+
     const type = await this.prisma.deductionType.update({
       where: { id },
-      data,
+      data: cleanData,
     });
     if (!type) throw new NotFoundException('Deduction type not found');
     return type;

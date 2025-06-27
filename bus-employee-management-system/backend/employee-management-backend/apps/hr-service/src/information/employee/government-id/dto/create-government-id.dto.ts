@@ -7,9 +7,6 @@ import {
 } from 'class-validator';
 
 export class CreateGovernmentIdDto {
-  @IsString()
-  employeeId: string;
-
   @IsNumber()
   typeId: number; // Now an integer, references GovernmentIDType
 

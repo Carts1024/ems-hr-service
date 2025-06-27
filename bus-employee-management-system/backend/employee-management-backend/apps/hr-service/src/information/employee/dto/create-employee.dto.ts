@@ -8,13 +8,11 @@ import {
   IsArray,
   IsDecimal,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
+import { CreateGovernmentIdDto } from '../government-id/dto/create-government-id.dto';
 
 export class CreateEmployeeDto {
-  // Will be system generated
-  // @IsString()
-  // @IsNotEmpty()
-  // employeeNumber: string;
-
   @IsString()
   @IsNotEmpty()
   firstName: string;
@@ -122,4 +120,10 @@ export class CreateEmployeeDto {
   @IsInt()
   @IsNotEmpty()
   positionId: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateGovernmentIdDto)
+  governmentIDs?: CreateGovernmentIdDto[];
 }
