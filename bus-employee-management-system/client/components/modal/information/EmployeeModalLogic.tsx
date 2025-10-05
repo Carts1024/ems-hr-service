@@ -49,12 +49,12 @@ export const useEmployeeModal = (
     const errors: typeof fieldErrors = {};
     if (!employee.firstName.trim()) errors.firstName = 'Required';
     if (!employee.lastName.trim()) errors.lastName = 'Required';
-    if (!employee.birthdate || !isAtLeast18(employee.birthdate)) errors.birthdate = 'Invalid';
-    if (!employee.email || !isValidEmail(employee.email)) errors.email = 'Invalid';
-    if (!isValidContact(employee.contact) || !isValidPhilippineContact(employee.contact)) errors.contact = 'Invalid';
+    if (!employee.birthdate || !isAtLeast18(employee.birthdate)) errors.birthdate = 'Must be atleast 18 years old.';
+    if (!employee.email || !isValidEmail(employee.email)) errors.email = 'Invalid email format.';
+    if (!isValidContact(employee.contact) || !isValidPhilippineContact(employee.contact)) errors.contact = 'Invalid format.';
     if (!employee.address) errors.address = 'Required';
     if (!employee.status) errors.status = 'Required';
-    if (!employee.dateHired || !isValidDateHired(employee.dateHired)) errors.dateHired = 'Invalid';
+    if (!employee.dateHired || !isValidDateHired(employee.dateHired)) errors.dateHired = 'Date Hired cannot be a future date.';
     if (!employee.department) errors.department = 'Required';
     if (!employee.position.trim()) errors.position = 'Required';
     setFieldErrors(errors);
