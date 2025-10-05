@@ -83,6 +83,23 @@ async function main() {
     }
   }
 
+  // --- 4. SEED GOVERNMENT ID TYPES ---
+  const governmentIdTypesData = [
+    { id: 1, name: "SSS", description: "Social Security System" },
+    { id: 2, name: "PAG-IBIG", description: "Home Development Mutual Fund" },
+    { id: 3, name: "PHILHEALTH", description: "Philippine Health Insurance Corporation" },
+    { id: 4, name: "TIN", description: "Tax Identification Number" },
+    { id: 5, name: "UMID", description: "Unified Multi-purpose ID" },
+  ];
+
+  for (const idType of governmentIdTypesData) {
+    await prisma.governmentIDType.upsert({
+      where: { id: idType.id },
+      update: { name: idType.name, description: idType.description },
+      create: idType,
+    });
+  }
+
   // // Helper: For sample, seed each employee with ALL benefit and deduction types
   // async function seedBenefitsAndDeductions(employeeId: string) {
   //   // Seed all benefit types
@@ -90,8 +107,8 @@ async function main() {
   //     await prisma.benefit.create({
   //       data: {
   //         employeeId,
-  //         benefitTypeId: benefitType.id,                          // or "percentage"
-  //         value: new Prisma.Decimal(100 + benefitType.id * 10), // just sample different values
+  //         benefitTypeId: benefitType.id,
+  //         value: new Prisma.Decimal(100 + benefitType.id * 10),
   //         frequency: 'monthly',
   //         effectiveDate: new Date("2024-07-01"),
   //         endDate: null,
@@ -105,8 +122,8 @@ async function main() {
   //       data: {
   //         employeeId,
   //         deductionTypeId: deductionType.id,
-  //         type: 'fixed',  
-  //         value: new Prisma.Decimal(50 + deductionType.id * 5), // just sample different values
+  //         type: 'fixed',
+  //         value: new Prisma.Decimal(50 + deductionType.id * 5),
   //         frequency: 'monthly',
   //         effectiveDate: new Date("2024-07-01"),
   //         endDate: null,
@@ -116,80 +133,10 @@ async function main() {
   //   }
   // }
 
-  // // --- 4. SEED EMPLOYEES + THEIR BENEFITS/DEDUCTIONS ---
-  // // Seed employees for positionId: 9 (Driver)
-  // for (let i = 1; i <= 10; i++) {
-  //   const emp = await prisma.employee.create({
-  //     data: {
-  //       employeeNumber: `EMP2024-P9-${i.toString().padStart(3, '0')}`,
-  //       firstName: `DriverFirst${i}`,
-  //       middleName: `M${i}`,
-  //       lastName: `DriverLast${i}`,
-  //       suffix: i % 2 === 0 ? "Jr." : null,
-  //       birthdate: new Date("1990-01-01"),
-  //       hiredate: new Date("2024-06-01"),
-  //       phone: `0917000000${i}`,
-  //       streetAddress: `Street ${i}`,
-  //       barangay: `Barangay P9`,
-  //       city: "Sample City",
-  //       province: "Metro Manila",
-  //       country: "Philippines",
-  //       zipCode: "1100",
-  //       emergencyContactName: `Emergency Contact ${i}`,
-  //       emergencyContactNo: `0922000000${i}`,
-  //       basicRate: new Prisma.Decimal("250.00"),
-  //       licenseType: "Professional",
-  //       licenseNo: `LICP9${i}`,
-  //       restrictionCodes: ["A", "B"],
-  //       expireDate: new Date("2028-06-01"),
-  //       employeeStatus: "active",
-  //       employeeType: "regular",
-  //       employeeClassification: "full-time",
-  //       terminationDate: null,
-  //       terminationReason: null,
-  //       positionId: 9,
-  //     }
-  //   });
-  //   await seedBenefitsAndDeductions(emp.id);
-  // }
+  // // --- 5. SEED EMPLOYEES + THEIR BENEFITS/DEDUCTIONS ---
+  // // (see your previous code for this, currently commented out)
 
-  // // Seed employees for positionId: 8 (Conductor)
-  // for (let i = 1; i <= 10; i++) {
-  //   const emp = await prisma.employee.create({
-  //     data: {
-  //       employeeNumber: `EMP2024-P8-${i.toString().padStart(3, '0')}`,
-  //       firstName: `ConductorFirst${i}`,
-  //       middleName: `M${i}`,
-  //       lastName: `ConductorLast${i}`,
-  //       suffix: i % 2 === 0 ? "Jr." : null,
-  //       birthdate: new Date("1992-02-02"),
-  //       hiredate: new Date("2024-06-02"),
-  //       phone: `0918000000${i}`,
-  //       streetAddress: `Street ${i}`,
-  //       barangay: `Barangay P8`,
-  //       city: "Sample City",
-  //       province: "Metro Manila",
-  //       country: "Philippines",
-  //       zipCode: "1101",
-  //       emergencyContactName: `Emergency Contact ${i}`,
-  //       emergencyContactNo: `0923000000${i}`,
-  //       basicRate: new Prisma.Decimal("220.00"),
-  //       licenseType: "Non-Professional",
-  //       licenseNo: `LICP8${i}`,
-  //       restrictionCodes: ["B", "C"],
-  //       expireDate: new Date("2029-07-01"),
-  //       employeeStatus: "active",
-  //       employeeType: "regular",
-  //       employeeClassification: "full-time",
-  //       terminationDate: null,
-  //       terminationReason: null,
-  //       positionId: 8,
-  //     }
-  //   });
-  //   await seedBenefitsAndDeductions(emp.id);
-  // }
-
-  console.log('BenefitTypes, DeductionTypes, Departments, Positions, Employees, Benefits, and Deductions seeded successfully.');
+  console.log('BenefitTypes, DeductionTypes, Departments, Positions, GovernmentIdTypes seeded successfully.');
 }
 
 main()

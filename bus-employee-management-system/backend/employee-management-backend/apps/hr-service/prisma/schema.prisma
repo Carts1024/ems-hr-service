@@ -59,6 +59,7 @@ model Employee {
   terminationReason      String?
   basicRate              Decimal?
   email                  String?              @unique
+  faceImage               String?
   attendances            Attendance[]
   benefits               Benefit[]
   cashAdvanceRequests    CashAdvanceRequest[]
