@@ -144,6 +144,7 @@ npm install @nestjs/throttler@latest
 npm install @nestjs/jwt @nestjs/passport passport passport-jwt cookie`
 npm install --save-dev @types/cookie
 npm install --save-dev nodemon
+npm install --save-dev ts-node
 
 
 ```
@@ -154,6 +155,7 @@ PrismaORM Installation:
 npm install @prisma/client`
 npm install --save-dev prisma
 npm install date-fns
+npm install --save-dev cpx
 
 ```
 -----------------------------------------------------------------------------------------
@@ -188,4 +190,8 @@ npx prisma generate
 ```PrismaORM RESET DB:
 npx prisma migrate reset
 ```
+```PrismaORM Seeding DB:
+npx prisma db seed
+```
+
 

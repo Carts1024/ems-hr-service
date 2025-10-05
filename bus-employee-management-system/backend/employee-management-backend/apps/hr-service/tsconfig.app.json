@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "outDir": "../../dist/apps/hr-service"
+  },
+  "include": ["src/**/*","apps/hr-service/test-env.js"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
+}

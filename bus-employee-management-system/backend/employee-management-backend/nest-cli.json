@@ -20,6 +20,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/gateway/tsconfig.app.json"
       }
+    },
+    "hr-service": {
+      "type": "application",
+      "root": "apps/hr-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/hr-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/hr-service/tsconfig.app.json"
+      }
+    },
+    "hr-service`": {
+      "type": "application",
+      "root": "apps/hr-service`",
+      "entryFile": "main",
+      "sourceRoot": "apps/hr-service`/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/hr-service`/tsconfig.app.json"
+      }
     }
   }
 }

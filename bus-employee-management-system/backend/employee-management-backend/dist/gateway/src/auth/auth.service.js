@@ -47,11 +47,11 @@ let AuthService = class AuthService {
             throw new common_1.HttpException(error?.response?.data || 'Auth Service Error', error?.response?.status || common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    async firstResetPassword(employeeId, newPassword) {
+    async firstResetPassword(employeeNumber, newPassword) {
         try {
             const authServiceUrl = this.configService.get('auth.authServiceUrl');
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${authServiceUrl}/auth/first-password-reset`, {
-                employeeId,
+                employeeNumber,
                 newPassword,
             }));
             return response.data;
