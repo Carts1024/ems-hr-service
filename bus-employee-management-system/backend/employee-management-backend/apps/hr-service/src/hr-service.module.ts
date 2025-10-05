@@ -5,9 +5,10 @@ import { DepartmentController } from './information/department/department.contro
 import { DepartmentService } from './information/department/department.service';
 import { EmployeeController } from './information/employee/employee.controller';
 import { EmployeeService } from './information/employee/employee.service';
+import { Department_Module } from './information/department/department.module';
 
 @Module({
-  imports: [],
+  imports: [Department_Module],
   controllers: [HrServiceController, DepartmentController, EmployeeController],
   providers: [HrServiceService, DepartmentService, EmployeeService],
 })
