@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { DepartmentController } from '../department/department.controller';
-import { DepartmentService } from '../department/department.service';
+import { DepartmentController } from './department.controller';
+import { DepartmentService } from './department.service';
+import { PrismaService } from '../../prisma/prisma.service'; // adjust path
 
 @Module({
-  imports: [EmployeeModule],
   controllers: [DepartmentController],
-  providers: [DepartmentService],
+  providers: [DepartmentService, PrismaService],
+  exports: [DepartmentService],
 })
-export class Department_Module {}
+export class DepartmentModule {}

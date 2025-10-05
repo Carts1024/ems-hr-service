@@ -17,6 +17,7 @@ const config_1 = require("@nestjs/config");
 const app_config_1 = require("./config/app.config");
 const auth_config_1 = require("./config/auth.config");
 const roles_controller_1 = require("./auth/roles.controller");
+const department_controller_1 = require("./hr-service/information/department/department.controller");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,6 +27,7 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
                 load: [app_config_1.default, auth_config_1.default],
+                envFilePath: 'apps/gateway/.env',
             }),
             axios_1.HttpModule,
             auth_module_1.AuthModule,
@@ -40,7 +42,7 @@ exports.AppModule = AppModule = __decorate([
                 },
             ]),
         ],
-        controllers: [app_controller_1.AppController, roles_controller_1.RolesController],
+        controllers: [app_controller_1.AppController, roles_controller_1.RolesController, department_controller_1.DepartmentController],
         providers: [app_service_1.AppService],
     })
 ], AppModule);

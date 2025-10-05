@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,30 +7,279 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Employee {
-  id                 String   @id @default(cuid())
-  employeeNumber     String   @unique
-  firstName          String    
-  lastName           String    
-  birthdate          DateTime  
-  hiredate           DateTime  
-  phone              String 
-  barangay           String 
-  zipCode            String 
-  employeeStatus     String   @default("active") // Employee status (e.g., 'active', 'inactive', 'terminated', 'On Leave')
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  departmentId       Int // Foreign key to Department model
-
-  department Department @relation(fields: [departmentId], references: [id])
+model Department {
+  id             Int         @id @default(autoincrement())
+  departmentName String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  candidates     Candidate[]
+  positions      Position[]
 }
 
-model Department {
-  id                  Int      @id @default(autoincrement())
-  departmentName      String   @unique
-  createdAt           DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Position {
+  id           Int         @id @default(autoincrement())
+  positionName String
+  departmentId Int
+  candidates   Candidate[]
+  employees    Employee[]
+  department   Department  @relation(fields: [departmentId], references: [id])
 
-  // Relationships
-  employee Employee[]
+  @@unique([positionName, departmentId])
+}
+
+model Employee {
+  id                     String               @id @default(cuid())
+  employeeNumber         String               @unique
+  firstName              String
+  lastName               String
+  birthdate              DateTime
+  hiredate               DateTime
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  positionId             Int
+  emergencyContactName   String?
+  emergencyContactNo     String?
+  expireDate             DateTime?
+  licenseNo              String?
+  licenseType            String?
+  middleName             String?
+  restrictionCodes       String[]             @default([])
+  barangay               String
+  employeeStatus         String               @default("active")
+  phone                  String
+  zipCode                String
+  city                   String
+  country                String
+  employeeClassification String?
+  employeeType           String               @default("regular")
+  province               String
+  streetAddress          String
+  suffix                 String?
+  terminationDate        DateTime?
+  terminationReason      String?
+  basicRate              Decimal?
+  email                  String?              @unique
+  faceImage               String?
+  attendances            Attendance[]
+  benefits               Benefit[]
+  cashAdvanceRequests    CashAdvanceRequest[]
+  deductions             Deduction[]
+  educations             Education[]
+  position               Position             @relation(fields: [positionId], references: [id])
+  governmentIDs          GovernmentID[]
+  leaveRequests          LeaveRequest[]
+  resignationRequests    ResignationRequest[]
+  workExperiences        WorkExperience[]
+}
+
+model Benefit {
+  id            Int         @id @default(autoincrement())
+  employeeId    String
+  value         Decimal
+  frequency     String?
+  effectiveDate DateTime
+  endDate       DateTime?
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  benefitTypeId Int
+  benefitType   BenefitType @relation(fields: [benefitTypeId], references: [id])
+  employee      Employee    @relation(fields: [employeeId], references: [id])
+}
+
+model Deduction {
+  id              Int           @id @default(autoincrement())
+  employeeId      String
+  frequency       String
+  effectiveDate   DateTime
+  endDate         DateTime?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deductionTypeId Int
+  type            String
+  value           Decimal
+  deductionType   DeductionType @relation(fields: [deductionTypeId], references: [id])
+  employee        Employee      @relation(fields: [employeeId], references: [id])
+}
+
+model Attendance {
+  id             Int       @id @default(autoincrement())
+  employeeId     String
+  date           DateTime
+  status         String
+  timeIn         DateTime?
+  timeOut        DateTime?
+  remarks        String?
+  isHoliday      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  overtimeHours  Float?
+  overtimeReason String?
+  employee       Employee  @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+}
+
+model GovernmentID {
+  id         Int              @id @default(autoincrement())
+  employeeId String
+  idNumber   String
+  issuedDate DateTime?
+  expiryDate DateTime?
+  isActive   Boolean          @default(true)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  typeId     Int
+  employee   Employee         @relation(fields: [employeeId], references: [id])
+  type       GovernmentIDType @relation(fields: [typeId], references: [id])
+
+  @@unique([employeeId, typeId])
+}
+
+model WorkExperience {
+  id          Int       @id @default(autoincrement())
+  employeeId  String
+  companyName String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Education {
+  id           Int       @id @default(autoincrement())
+  employeeId   String
+  institution  String?
+  degree       String?
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  honors       String?
+  description  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model CashAdvanceRequest {
+  id           Int       @id @default(autoincrement())
+  employeeId   String
+  amount       Decimal
+  reason       String?
+  requestDate  DateTime  @default(now())
+  status       String
+  approvedDate DateTime?
+  remarks      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model ResignationRequest {
+  id            Int      @id @default(autoincrement())
+  employeeId    String
+  reason        String?
+  requestDate   DateTime @default(now())
+  effectiveDate DateTime
+  status        String
+  remarks       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model LeaveRequest {
+  id           Int       @id @default(autoincrement())
+  employeeId   String
+  leaveType    String
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  status       String
+  requestDate  DateTime  @default(now())
+  approvedDate DateTime?
+  remarks      String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Candidate {
+  id                String                    @id @default(cuid())
+  firstName         String
+  middleName        String?
+  lastName          String
+  suffix            String?
+  email             String?
+  streetAddress     String
+  barangay          String
+  city              String
+  province          String
+  country           String
+  birthdate         DateTime
+  applicationStatus String
+  applicationDate   DateTime
+  sourceOfHire      String?
+  departmentId      Int
+  desiredPositionId Int
+  interviewDate     DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  department        Department                @relation(fields: [departmentId], references: [id])
+  position          Position                  @relation(fields: [desiredPositionId], references: [id])
+  educations        CandidateEducation[]
+  workExperiences   CandidateWorkExperience[]
+}
+
+model CandidateWorkExperience {
+  id          Int       @id @default(autoincrement())
+  candidateId String
+  companyName String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+}
+
+model CandidateEducation {
+  id           Int       @id @default(autoincrement())
+  candidateId  String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  honors       String?
+  description  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  candidate    Candidate @relation(fields: [candidateId], references: [id])
+}
+
+model BenefitType {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  benefits    Benefit[]
+}
+
+model DeductionType {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  deductions  Deduction[]
+}
+
+model GovernmentIDType {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  description   String?
+  governmentIDs GovernmentID[]
 }

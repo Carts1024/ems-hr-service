@@ -3,20 +3,35 @@ import {
   IsNotEmpty,
   IsDateString,
   IsOptional,
+  IsInt,
+  IsNumber,
+  IsArray,
+  IsDecimal,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
+import { CreateGovernmentIdDto } from '../government-id/dto/create-government-id.dto';
 
 export class CreateEmployeeDto {
-  @IsString()
-  @IsNotEmpty()
-  employeeNumber: string;
-
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
   @IsString()
+  @IsOptional()
+  middleName?: string;
+
+  @IsString()
   @IsNotEmpty()
   lastName: string;
+
+  @IsString()
+  @IsOptional()
+  suffix?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
 
   @IsDateString()
   @IsNotEmpty()
@@ -31,17 +46,84 @@ export class CreateEmployeeDto {
   phone: string;
 
   @IsString()
+  @IsOptional()
+  streetAddress?: string;
+
+  @IsString()
   @IsNotEmpty()
   barangay: string;
 
   @IsString()
   @IsNotEmpty()
-  zipCode: string;
+  city: string;
 
+  @IsString()
   @IsNotEmpty()
-  departmentId: number;
+  province: string;
+
+  @IsString()
+  @IsNotEmpty()
+  country: string;
+
+  @IsString()
+  @IsNotEmpty()
+  zipCode: string;
 
   @IsString()
   @IsOptional()
-  employeeStatus?: string;
+  emergencyContactName?: string;
+
+  @IsString()
+  @IsOptional()
+  emergencyContactNo?: string;
+
+  @IsDecimal()
+  @IsOptional()
+  basicRate?: number | string;
+
+  @IsString()
+  @IsOptional()
+  licenseType?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseNo?: string;
+
+  @IsArray()
+  @IsOptional()
+  restrictionCodes?: string[];
+
+  @IsDateString()
+  @IsOptional()
+  expireDate?: string;
+
+  @IsString()
+  @IsOptional()
+  employeeStatus?: string; // default: 'active'
+
+  @IsString()
+  @IsOptional()
+  employeeType?: string; // default: 'regular'
+
+  @IsString()
+  @IsOptional()
+  employeeClassification?: string;
+
+  @IsDateString()
+  @IsOptional()
+  terminationDate?: string;
+
+  @IsString()
+  @IsOptional()
+  terminationReason?: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  positionId: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateGovernmentIdDto)
+  governmentIDs?: CreateGovernmentIdDto[];
 }
